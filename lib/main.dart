@@ -70,6 +70,18 @@ class HomePageState extends State<HomePage> {
     String content = widget.MODEL.Content;
     double font_size = widget.MODEL.FontSize;
     Color font_color = colorParse(widget.MODEL.FontColor);
+    double textScrollSpeed;
+    switch (widget.MODEL.ScrollSpeed) {
+      case '慢':
+        textScrollSpeed = 50.0;
+        break;
+      case '正常':
+        textScrollSpeed = 100.0;
+        break;
+      case '快':
+        textScrollSpeed = 200.0;
+        break;
+    }
 
     // 内容边距
     double sp = (screenH-font_size)/2;
@@ -84,7 +96,7 @@ class HomePageState extends State<HomePage> {
             //backgroundColor: Colors.black,
             child: ListView(
                 children: [
-                  _buildMarquee(content, font_size, font_color),
+                  _buildMarquee(content, font_size, font_color, textScrollSpeed),
                 ].map((marquee){
                   return Padding(
                     //padding: EdgeInsets.all(16.0),
@@ -102,11 +114,12 @@ class HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildMarquee(scrollText, font_size, font_color) {
+  Widget _buildMarquee(scrollText, font_size, font_color, textScrollSpeed) {
     return Marquee(
       text: scrollText,
       style: TextStyle(fontSize: font_size, color: font_color),
       blankSpace: 60,
+      velocity: textScrollSpeed, // set slow/normal/fast 50,100,200
     );
   }
 }
@@ -130,6 +143,7 @@ class SettingPageState extends State<SettingPage> {
   final GlobalKey<FormState> _scrollTextContentKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _scrollTextFontSizeKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _scrollTextFontColorKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _scrollTextSpeedKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -147,10 +161,11 @@ class SettingPageState extends State<SettingPage> {
       children: <Widget>[
         CardSettingsHeader(label: '自定义',),
         _buildCardSettingsParagraph(5),
-        // TODO: 添加跑马灯速度，滚动文字风格样式
+        // TODO: 添加滚动文字风格样式
         _buildCardSettingsFontSizePicker(),
         _buildCardSettingsListPicker_FontColor(),
         //_buildCardSettingsListPicker_FontFamily(),
+        _buildCardSettingsTextScrollSpeedPicker(),
         _buildCardSettingsButton_Save(),
         _buildCardSettingsButton_Reset(),
       ],
@@ -189,6 +204,22 @@ class SettingPageState extends State<SettingPage> {
       label: '字体颜色',
       initialValue: intelligentCast<Color>(_marqueeModel.FontColor),
       onSaved: (value) => _marqueeModel.FontColor = colorToString(value),
+    );
+  }
+
+  CardSettingsListPicker _buildCardSettingsTextScrollSpeedPicker() {
+    return CardSettingsListPicker(
+      key: _scrollTextSpeedKey,
+      label: '滚动速度',
+      initialValue: _marqueeModel.ScrollSpeed,
+      hintText: '选择滚动速度',
+      autovalidate: _autoValidate,
+      options: <String>['慢', '正常', '快'],
+      validator: (String value) {
+        if (value == null || value.isEmpty) return '必须选择一种滚动速度';
+        return null;
+      },
+      onSaved: (value) => _marqueeModel.ScrollSpeed = value,
     );
   }
 
@@ -233,4 +264,5 @@ class MarqueeModel {
   String Content = "Welcome the LED Marquee Application by@Bean.Wei";
   double FontSize = 58;
   String FontColor = 'FF0000';
+  String ScrollSpeed = '正常';
 }
