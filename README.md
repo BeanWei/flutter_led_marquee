@@ -7,9 +7,11 @@
 </div>
 
 ## 依赖
-> [RealRichText](!https://github.com/bytedance/RealRichText)  
-> [marquee](!https://github.com/BeanWei/marquee)
-> [card_settings](!https://github.com/codegrue/card_settings)
+> [RealRichText](https://github.com/bytedance/RealRichText) 
+
+> [marquee](https://github.com/BeanWei/marquee)
+
+> [card_settings](https://github.com/codegrue/card_settings)
 
 ## 这skr啥？
 > Flutter 制作的 LED 跑马灯弹幕，手持弹幕，演唱会打Call必备。
@@ -27,7 +29,7 @@
 - [ ] 分离代码中的常量，支持i18 ？！, 顺便写份 English README?!!
 
 ## Bug/issue
-> 已知bug: 文字大小超过58后，emoji将会失效。[见bytedance/RealRichText此仓库issue](!https://github.com/bytedance/RealRichText/issues/5)
+> 已知bug: 文字大小超过58后，emoji将会失效。[见bytedance/RealRichText此仓库issue](https://github.com/bytedance/RealRichText/issues/5)
 
 ## LICENSE
 
