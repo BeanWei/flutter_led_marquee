@@ -1,22 +1,34 @@
-# flutter_led_marquee
+<h1 align="center">🌟 Flutter_LED_Marquee © 🌟</p>
 
-Flutter_LED_Marquee
 
-# 🌞 Screenshots
+## 🌞 Screenshots
 <div>
     <img src='./Screenshots/flutter_led_marquee.gif' width=680>
 </div>
 
+## 依赖
+> [RealRichText](!https://github.com/bytedance/RealRichText)  
+> [marquee](!https://github.com/BeanWei/marquee)
+> [card_settings](!https://github.com/codegrue/card_settings)
 
-## Getting Started
+## 这skr啥？
+> Flutter 制作的 LED 跑马灯弹幕，手持弹幕，演唱会打Call必备。
 
-This project is a starting point for a Flutter application.
+## 怎么用?
+> 暂时还没开发完全，没有release版。可以clone到本地试玩。
+> 双击文字滚动的页面即可进入自定义页面，文本支持富文本？。暂时只支持文本内容，文字大小，文字颜色的自定义。
 
-A few resources to get you started if this is your first Flutter project:
+## TODO
+- [ ] 支持自定义文字滚动速度
+- [ ] 支持自定义文字风格
+- [ ] 支持图片作为文本？！
+-----------------------------------------------------------------
+- [ ] 语言国际化？！
+- [ ] 分离代码中的常量，支持i18 ？！, 顺便写份 English README?!!
 
-- [Lab: Write your first Flutter app](https://flutter.io/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.io/docs/cookbook)
+## Bug/issue
+> 已知bug: 文字大小超过58后，emoji将会失效。[见bytedance/RealRichText此仓库issue](!https://github.com/bytedance/RealRichText/issues/5)
 
-For help getting started with Flutter, view our 
-[online documentation](https://flutter.io/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
+## LICENSE
+
+@MIT
