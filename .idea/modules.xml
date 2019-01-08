@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/flutter_led_marquee.iml" filepath="$PROJECT_DIR$/flutter_led_marquee.iml" />
-      <module fileurl="file://$PROJECT_DIR$/android/flutter_led_marquee_android.iml" filepath="$PROJECT_DIR$/android/flutter_led_marquee_android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/scroll.iml" filepath="$PROJECT_DIR$/scroll.iml" />
+      <module fileurl="file://$PROJECT_DIR$/android/scroll_android.iml" filepath="$PROJECT_DIR$/android/scroll_android.iml" />
     </modules>
   </component>
 </project>

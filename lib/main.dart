@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:card_settings/card_settings.dart';
-import 'package:flutter_led_marquee/plugin/marquee.dart';
+import 'package:scroll/plugin/marquee.dart';
 
 void main() {
   // 全屏显示
@@ -16,12 +16,12 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  final _initModel = MarqueeModel();
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Marquee',
-      home: HomePage(MODEL: _initModel),
+      //home: HomePage(MODEL: _initModel),
+      home: SettingPage(),
 
       // Card them
       theme: ThemeData(
@@ -42,84 +42,6 @@ class MyApp extends StatelessWidget {
           labelStyle: TextStyle(color: Colors.indigo[400]), // style for labels
         ),
       ),
-
-      routes: {
-        "home": (BuildContext context) => new HomePage(),
-        "setting": (BuildContext context) => new SettingPage(),
-      },
-    );
-  }
-}
-
-class HomePage extends StatefulWidget {
-  MarqueeModel MODEL;
-
-  HomePage({Key key, this.MODEL}) : super(key: key);
-
-  @override
-  HomePageState createState() => HomePageState();
-}
-
-class HomePageState extends State<HomePage> {
-  @override
-  Widget build(BuildContext context) {
-    double screenH = MediaQuery.of(context).size.height;
-    double statusBarH = MediaQueryData.fromWindow(window).padding.top;
-
-    // 内容样式
-    String content = widget.MODEL.Content;
-    double font_size = widget.MODEL.FontSize;
-    Color font_color = colorParse(widget.MODEL.FontColor);
-    double textScrollSpeed;
-    switch (widget.MODEL.ScrollSpeed) {
-      case '慢':
-        textScrollSpeed = 50.0;
-        break;
-      case '正常':
-        textScrollSpeed = 100.0;
-        break;
-      case '快':
-        textScrollSpeed = 200.0;
-        break;
-    }
-
-    // 内容边距
-    double sp = (screenH-font_size)/2;
-
-    return new Scaffold(
-      backgroundColor: Colors.black,
-      body: new Center(
-        child: new GestureDetector(
-            onDoubleTap: (){
-              Navigator.pushNamed(context, "setting");
-            },
-            //backgroundColor: Colors.black,
-            child: ListView(
-                children: [
-                  _buildMarquee(content, font_size, font_color, textScrollSpeed),
-                ].map((marquee){
-                  return Padding(
-                    //padding: EdgeInsets.all(16.0),
-                      padding: EdgeInsets.fromLTRB(0, sp-24, 0, sp+statusBarH),
-                      child: Container(
-                          height: screenH,
-                          color: Colors.black,
-                          child: marquee
-                      )
-                  );
-                }).toList()
-            )
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMarquee(scrollText, font_size, font_color, textScrollSpeed) {
-    return Marquee(
-      text: scrollText,
-      style: TextStyle(fontSize: font_size, color: font_color),
-      blankSpace: 60,
-      velocity: textScrollSpeed, // set slow/normal/fast 50,100,200
     );
   }
 }
@@ -145,14 +67,50 @@ class SettingPageState extends State<SettingPage> {
   final GlobalKey<FormState> _scrollTextFontColorKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _scrollTextSpeedKey = GlobalKey<FormState>();
 
+  // 双击返回退出应用
+  int _lastClickTime = 0;
+  Future<bool> _onWillPop() {
+    int nowTime = new DateTime.now().microsecondsSinceEpoch;
+    if (_lastClickTime != 0 && nowTime - _lastClickTime > 800) {
+      return showDialog(
+          context: context,
+          builder: (context) =>
+          new AlertDialog(
+            title: new Text('提示'),
+            content: new Text('是否退出应用'),
+            actions: <Widget>[
+              new FlatButton(onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+                child: new Text('否'),),
+              new FlatButton(onPressed: () {
+                //Navigator.pushNamedAndRemoveUntil(context, 'home', (route) => route == null);
+                Navigator.of(context).pop(true);
+              },
+                child: new Text('是'),),
+            ],
+          )
+      ) ?? false;
+    } else {
+      _lastClickTime = new DateTime.now().microsecondsSinceEpoch;
+      new Future.delayed(const Duration(milliseconds: 800), () {
+        _lastClickTime = 0;
+      });
+      return new Future.value(false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      body: Form(
-        key: _formKey,
-        child: _buildPortraitLayout(),
-      ),
+    return WillPopScope(
+        child: Scaffold(
+          key: _scaffoldKey,
+          body: Form(
+            key: _formKey,
+            child: _buildPortraitLayout(),
+          ),
+        ),
+        onWillPop: _onWillPop
     );
   }
 
@@ -161,9 +119,9 @@ class SettingPageState extends State<SettingPage> {
       children: <Widget>[
         CardSettingsHeader(label: '自定义',),
         _buildCardSettingsParagraph(5),
-        // TODO: 添加滚动文字风格样式
         _buildCardSettingsFontSizePicker(),
         _buildCardSettingsListPicker_FontColor(),
+        // TODO: 添加滚动文字风格样式
         //_buildCardSettingsListPicker_FontFamily(),
         _buildCardSettingsTextScrollSpeedPicker(),
         _buildCardSettingsButton_Save(),
@@ -258,6 +216,84 @@ class SettingPageState extends State<SettingPage> {
   }
 }
 
+class HomePage extends StatefulWidget {
+  MarqueeModel MODEL;
+
+  HomePage({Key key, this.MODEL}) : super(key: key);
+
+  @override
+  HomePageState createState() => HomePageState();
+}
+
+class HomePageState extends State<HomePage> {
+  // 禁用返回按钮
+  Future<bool> _onWillPop()=>new Future.value(false);
+
+  @override
+  Widget build(BuildContext context) {
+    double screenH = MediaQuery.of(context).size.height;
+    // TODO: 无法获取状态栏高度.
+    //double statusBarH = MediaQueryData.fromWindow(window).padding.top;
+
+    // 内容样式
+    String content = widget.MODEL.Content;
+    double font_size = widget.MODEL.FontSize;
+    Color font_color = colorParse(widget.MODEL.FontColor);
+    double textScrollSpeed;
+    switch (widget.MODEL.ScrollSpeed) {
+      case '慢':
+        textScrollSpeed = 50.0;
+        break;
+      case '正常':
+        textScrollSpeed = 100.0;
+        break;
+      case '快':
+        textScrollSpeed = 200.0;
+        break;
+    }
+
+    // 内容边距
+    double sp = (screenH-font_size)/2;
+
+    return new WillPopScope(
+      onWillPop: _onWillPop,
+      child: new Scaffold(
+        backgroundColor: Colors.black,
+        body: new Center(
+          child: new GestureDetector(
+              onDoubleTap: (){
+                Navigator.pop(context);
+              },
+              //backgroundColor: Colors.black,
+              child: ListView(
+                  children: [
+                    _buildMarquee(content, font_size, font_color, textScrollSpeed),
+                  ].map((marquee){
+                    return Padding(
+                        padding: EdgeInsets.fromLTRB(0, sp, 0, sp),
+                        child: Container(
+                            height: screenH,
+                            color: Colors.black,
+                            child: marquee
+                        )
+                    );
+                  }).toList()
+              )
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMarquee(scrollText, font_size, font_color, textScrollSpeed) {
+    return Marquee(
+      text: scrollText,
+      style: TextStyle(fontSize: font_size, color: font_color),
+      blankSpace: 60,
+      velocity: textScrollSpeed, // set slow/normal/fast 50,100,200
+    );
+  }
+}
 
 // Edit content model , this below data is the init data.
 class MarqueeModel {
