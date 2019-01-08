@@ -25,6 +25,7 @@
 - [ ] 支持自定义文字风格
 - [ ] 支持图片作为文本？！
 -----------------------------------------------------------------
+- [ ] 支持双击返回退出
 - [ ] 语言国际化？！
 - [ ] 分离代码中的常量，支持i18 ？！, 顺便写份 English README?!!
 
@@ -32,6 +33,7 @@
 > 已知bug: 
 -    文字大小超过58后，emoji将会失效。[见bytedance/RealRichText此仓库issue](https://github.com/bytedance/RealRichText/issues/5)
 -    无法获取状态栏高度
+-    打包后的Apk无法全屏显示emmmm.
 
 ## LICENSE
 
