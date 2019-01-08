@@ -33,7 +33,7 @@
 > 已知bug: 
 -    文字大小超过58后，emoji将会失效。[见bytedance/RealRichText此仓库issue](https://github.com/bytedance/RealRichText/issues/5)
 -    无法获取状态栏高度
--    打包后的Apk无法全屏显示emmmm (Dev: Android 8.0, 模拟器5.0正常).
+-    ~~打包后的Apk无法全屏显示emmmm (Dev: Android 8.0, 模拟器5.0正常).~~(Release版V1.0.0打包后没有此问题？？？黑人❓.jpg)
 
 ## LICENSE
 
