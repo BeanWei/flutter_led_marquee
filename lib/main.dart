@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:card_settings/card_settings.dart';
-import 'package:scroll/plugin/marquee.dart';
+import 'package:flutter_led_marquee/plugin/marquee.dart';
 
 void main() {
   // 全屏显示
