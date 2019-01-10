@@ -1,9 +1,12 @@
 import 'dart:ui';
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:card_settings/card_settings.dart';
-import 'package:flutter_led_marquee/plugin/marquee.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_led_marquee/plugin/marquee_pro.dart';
+import 'package:flutter_led_marquee/plugin/rich_text.dart';
 
 void main() {
   // 全屏显示
@@ -20,7 +23,6 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Marquee',
-      //home: HomePage(MODEL: _initModel),
       home: SettingPage(),
 
       // Card them
@@ -52,6 +54,19 @@ class SettingPage extends StatefulWidget {
 }
 
 class SettingPageState extends State<SettingPage> {
+  // get the Permissions
+  @override
+  initState() {
+    super.initState();
+    reqPermission();
+  }
+
+  reqPermission() async {
+    PermissionStatus _permissionStatus = await PermissionHandler().checkPermissionStatus(PermissionGroup.storage);
+    if (_permissionStatus != PermissionStatus.granted) {
+      Map<PermissionGroup, PermissionStatus> permissions = await PermissionHandler().requestPermissions([PermissionGroup.storage]);
+    }
+  }
 
   // form model
   final _marqueeModel = MarqueeModel();
@@ -66,6 +81,9 @@ class SettingPageState extends State<SettingPage> {
   final GlobalKey<FormState> _scrollTextFontSizeKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _scrollTextFontColorKey = GlobalKey<FormState>();
   final GlobalKey<FormState> _scrollTextSpeedKey = GlobalKey<FormState>();
+
+  final GlobalKey<FormState> _imgPathKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _imgSizeKey = GlobalKey<FormState>();
 
   // 双击返回退出应用
   int _lastClickTime = 0;
@@ -117,13 +135,16 @@ class SettingPageState extends State<SettingPage> {
   CardSettings _buildPortraitLayout() {
     return CardSettings(
       children: <Widget>[
-        CardSettingsHeader(label: '自定义',),
+        CardSettingsHeader(label: '定义文本',),
         _buildCardSettingsParagraph(5),
         _buildCardSettingsFontSizePicker(),
         _buildCardSettingsListPicker_FontColor(),
         // TODO: 添加滚动文字风格样式
         //_buildCardSettingsListPicker_FontFamily(),
         _buildCardSettingsTextScrollSpeedPicker(),
+        CardSettingsHeader(label: '插入图片*如无需插入图片请忽略*',),
+        _buildCardSettingsImgPathInput(),
+        _buildCardSettingsImgSizePicker(),
         _buildCardSettingsButton_Save(),
         _buildCardSettingsButton_Reset(),
       ],
@@ -181,6 +202,30 @@ class SettingPageState extends State<SettingPage> {
     );
   }
 
+  // 插入图片
+  CardSettingsParagraph _buildCardSettingsImgPathInput() {
+    return CardSettingsParagraph(
+      key: _imgPathKey,
+      label: '图片路径',
+      numberOfLines: 1,
+      initialValue: _marqueeModel.ImgPath,
+      validator: (value) {
+        // TODO: 添加路径有效的校验.
+      },
+      onSaved: (value) => _marqueeModel.ImgPath = value,
+    );
+  }
+
+  CardSettingsDouble _buildCardSettingsImgSizePicker({TextAlign labelAligin}) {
+    return CardSettingsDouble (
+      key: _imgSizeKey,
+      label: '图片大小',
+      labelAlign: labelAligin,
+      initialValue: _marqueeModel.ImgSize,
+      onSaved: (value) => _marqueeModel.ImgSize = value,
+    );
+  }
+
   // handlers
   CardSettingsButton _buildCardSettingsButton_Save() {
     return CardSettingsButton(
@@ -232,14 +277,15 @@ class HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     double screenH = MediaQuery.of(context).size.height;
-    // TODO: 无法获取状态栏高度.
-    //double statusBarH = MediaQueryData.fromWindow(window).padding.top;
 
     // 内容样式
     String content = widget.MODEL.Content;
+    TextStyle textstyle = TextStyle(color: colorParse(widget.MODEL.FontColor), fontSize: widget.MODEL.FontSize);
     double font_size = widget.MODEL.FontSize;
-    Color font_color = colorParse(widget.MODEL.FontColor);
     double textScrollSpeed;
+    String imgpath = widget.MODEL.ImgPath;
+    double imgsize = widget.MODEL.ImgSize;
+
     switch (widget.MODEL.ScrollSpeed) {
       case '慢':
         textScrollSpeed = 50.0;
@@ -252,8 +298,32 @@ class HomePageState extends State<HomePage> {
         break;
     }
 
+    double L = getTextLength(content, textstyle) + imgsize;
+
+    List<TextSpan> allcontent = [
+      TextSpan(
+        text: content,
+        style: textstyle,
+      )
+    ];
+    if (imgpath != '') {
+      allcontent.add(
+        ImageSpan(
+          FileImage(File(imgpath)),
+          imageHeight: imgsize,
+          imageWidth: imgsize,
+        )
+      );
+    }
+
     // 内容边距
-    double sp = (screenH-font_size)/2;
+    double maxsize;
+    if (font_size > imgsize) {
+      maxsize = font_size;
+    } else {
+      maxsize = imgsize;
+    }
+    double sp = (screenH-maxsize)/2;
 
     return new WillPopScope(
       onWillPop: _onWillPop,
@@ -267,7 +337,7 @@ class HomePageState extends State<HomePage> {
               //backgroundColor: Colors.black,
               child: ListView(
                   children: [
-                    _buildMarquee(content, font_size, font_color, textScrollSpeed),
+                    _buildMarquee(allcontent, L, textScrollSpeed),
                   ].map((marquee){
                     return Padding(
                         padding: EdgeInsets.fromLTRB(0, sp, 0, sp),
@@ -285,10 +355,10 @@ class HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildMarquee(scrollText, font_size, font_color, textScrollSpeed) {
+  Widget _buildMarquee(scrollText, textsLength, textScrollSpeed) {
     return Marquee(
-      text: scrollText,
-      style: TextStyle(fontSize: font_size, color: font_color),
+      richtexts: scrollText,
+      textsLength: textsLength,
       blankSpace: 60,
       velocity: textScrollSpeed, // set slow/normal/fast 50,100,200
     );
@@ -301,4 +371,21 @@ class MarqueeModel {
   double FontSize = 58;
   String FontColor = 'FF0000';
   String ScrollSpeed = '正常';
+
+  String ImgPath = '';
+  double ImgSize = 0;
 }
+
+double getTextLength(text, style) {
+  final span = TextSpan(text: text, style: style);
+  final tp = TextPainter(
+    text: span,
+    maxLines: 1,
+    textDirection: TextDirection.ltr,
+    //locale: Localizations.localeOf(context),
+  );
+
+  tp.layout(maxWidth: double.infinity);
+  return tp.width;
+}
+
